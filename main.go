@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -86,6 +87,12 @@ func CalculateBehavioralRisk(username string, currentIP string, query string) (i
 
 	// 3. Command Signature Parsing & Data Exfiltration Target Checks
 	cleanQuery := strings.ToUpper(query)
+
+	// 5. Active Honeypot Decoy Intersection (Out-of-the-box Trap)
+	if strings.Contains(cleanQuery, "SECRET_ADMIN_OVERRIDE_CREDENTIALS") || strings.Contains(cleanQuery, "BANK_MASTER_VAULT_KEYS") {
+		return 100, "CRITICAL: Honeypot Decoy Tripped - Active Inside Reconnaissance Detected"
+	}
+
 	if strings.Contains(cleanQuery, "SELECT *") && !strings.Contains(cleanQuery, "WHERE") {
 		riskScore += 40
 		reasons = append(reasons, "Bulk table dump sequence scanned")
@@ -118,6 +125,7 @@ func CalculateBehavioralRisk(username string, currentIP string, query string) (i
 }
 
 // GenerateQuantumResistantAuditLog packs and signs the JSON file payload immutably
+// GenerateQuantumResistantAuditLog packs and signs the JSON file payload immutably
 func GenerateQuantumResistantAuditLog(user, ip, query, action string, score int) {
 	entry := LogEntry{
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
@@ -128,15 +136,20 @@ func GenerateQuantumResistantAuditLog(user, ip, query, action string, score int)
 		Action:    action,
 	}
 
-	// Serialize object metadata fields
 	dataBytes, _ := json.Marshal(entry)
-
-	// Create SHA-256 state tracking signature payload
 	hashedPayload := sha256.Sum256(dataBytes)
-
-	// Cryptographically sign the resulting hash string block
 	sigBytes := ed25519.Sign(privateKey, hashedPayload[:])
 	entry.Signature = hex.EncodeToString(sigBytes)
+
+	// Format single line JSON for streamlined log parsing
+	singleLineLog, _ := json.Marshal(entry)
+
+	// Append directly to the local audit log file
+	f, err := os.OpenFile("audit_log.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err == nil {
+		defer f.Close()
+		f.WriteString(string(singleLineLog) + "\n")
+	}
 
 	finalLog, _ := json.MarshalIndent(entry, "", "  ")
 	fmt.Printf("\n[IMMUTABLE LOG OUTPUT]\n%s\n-----------------------\n", string(finalLog))

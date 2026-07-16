@@ -1,0 +1,1 @@
+{"timestamp":"2026-07-16T05:18:44Z","user":"admin_alex","client_ip":"192.168.1.25","query":"SELECT id FROM balances WHERE id = 450","risk_score":20,"action":"ALLOWED - Risk Score: 20","signature":"d88123ec2896f9f92c8cc88d3d0760c6f1c4b23d422b3dcf815db700d5f8758bb2f5a3f385ba261bbcb492750a0ef7149a4ddb8d837fb3773eb6d9f134b7b90f"}
