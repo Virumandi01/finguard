@@ -34,12 +34,25 @@ SSH into your AWS Ubuntu Server instance inside your private network mesh and pu
 ```bash
 sudo mkdir -p /etc/vaultguard /var/log/vaultguard
 sudo chown -R ubuntu:ubuntu /etc/vaultguard /var/log/vaultguard
-2. Compile the High-Performance Gateway Proxy (Local Windows/Linux)Cross-compile the Go binary specifically targeting the Linux environment to bypass software dependencies:PowerShell# Windows PowerShell
+2. Compile the High-Performance Gateway Proxy (Local Windows/Linux)
+Cross-compile the Go binary specifically targeting the Linux environment to bypass software dependencies:
+
+PowerShell
+# Windows PowerShell
 $env:GOOS="linux"; $env:GOARCH="amd64"; go build -o zero-trust-gateway main.go
-Bash# Linux / macOS Terminal
+Bash
+# Linux / macOS Terminal
 GOOS=linux GOARCH=amd64 go build -o zero-trust-gateway main.go
-3. Deploy the Executable via Secure Copy Protocol (SCP)Upload the fresh binary onto your remote AWS instance:PowerShellscp -i "path/to/your-key.pem" zero-trust-gateway ubuntu@your-aws-ip:/home/ubuntu/
-4. Initialize Database Decoys & Seed Mock DataExecute the provided SQL configuration script against your PostgreSQL engine. This structures your real banking transactions and injects our custom honeypot tables:SQL-- DANGER ZONE DECOY: Trigger table designed to trap lateral movements
+3. Deploy the Executable via Secure Copy Protocol (SCP)
+Upload the fresh binary onto your remote AWS instance:
+
+PowerShell
+scp -i "path/to/your-key.pem" zero-trust-gateway ubuntu@your-aws-ip:/home/ubuntu/
+4. Initialize Database Decoys & Seed Mock Data
+Execute the provided SQL configuration script against your PostgreSQL engine. This structures your real banking transactions and injects our custom honeypot tables:
+
+SQL
+-- DANGER ZONE DECOY: Trigger table designed to trap lateral movements
 CREATE TABLE BANK_MASTER_VAULT_KEYS (
     secret_key_id INT PRIMARY KEY,
     key_hash VARCHAR(256),
@@ -49,9 +62,60 @@ CREATE TABLE BANK_MASTER_VAULT_KEYS (
 
 -- Seed decoy trap with realistic-looking credentials
 INSERT INTO BANK_MASTER_VAULT_KEYS VALUES (1, 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'SUPER_ROOT', NOW());
-🧪 Testing Scenarios & VerificationOnce deployed, execute the binary in your background architecture:Bash# Run the proxy gateway on the remote AWS Server
-/home/ubuntu/zero-trust-gateway &
-Launch the visual interface monitoring stack locally:Bashstreamlit run app.py
-Scenario A: Verifying Safe System Actions (Normal Transaction Flow)Simulate a normal, standard query pattern by interacting through the proxy interface port:SQLSELECT transaction_id, account_id, amount FROM bank_transactions WHERE branch_id = 405;
-Expected Result: The deterministic math engine processes the velocity and location, generates a clean risk index ($<30$), and serves the data seamlessly.Scenario B: Triggering Active Defenses (The Honeypot Trap)Simulate an inside threat actor attempting to run reconnaissance on administrative database secrets:SQLSELECT * FROM BANK_MASTER_VAULT_KEYS;
-Expected Result: The gateway instantly intercepts the instruction. The Honeypot trap triggers a Risk Score of 100.The proxy performs a Surgical Freeze—cutting off the individual's network endpoint connection globally while customer bank transactions remain unaffected.Scenario C: Post-Quantum Cryptographic Audit ValidationOpen the live dashboard to review the newly populated entry. The log signature block will reflect the lattice-based cryptographic hash matrix (crypto/ed25519). Attempt to manually modify the local text-based log file at /var/log/vaultguard/audit.log and verify that the SOC monitor flag immediately raises a critical red warning indicator, proving the absolute immutability of the operational records.🔒 Security & Compliance MatrixComponentProtection MechanismCompliance MappingNetwork LayerHardware-Bound Mesh VPN (Tailscale/Headscale)NIST SP 800-207Storage LayerStructural Telemetry Masking / SanitizationGDPR / HIPAA PrivacyAudit LayerAsynchronous Post-Quantum Hash VerificationDORA / Financial AuditsLogic LayerMulti-Level Zero-Knowledge Executive Override TokenPrivileged Access Management (PAM)
+🧪 Testing Scenarios & Sample Commands
+To execute tests, launch the system modules across your environment windows.
+
+Start the compiled proxy daemon on your remote AWS server terminal (Terminal 1):
+
+Bash
+/home/ubuntu/zero-trust-gateway
+Launch the visual SOC tracking analytics panel on your local administrative station terminal:
+
+Bash
+streamlit run app.py
+Open a local terminal (Terminal 2) to simulate administrative pipeline queries using the standard PowerShell socket pipelines outlined below.
+
+🟢 Scenario A: Safe, Baseline Behavior
+Simulate admin_alex running a low-risk, filtered database query inside working hours from his approved workstation IP (192.168.1.25).
+
+Run this command:
+
+PowerShell
+$client = New-Object System.Net.Sockets.TcpClient("localhost", 8080)
+$stream = $client.GetStream()$data = [System.Text.Encoding]::UTF8.GetBytes("admin_alex|192.168.1.25|SELECT id FROM balances WHERE id = 450")
+$stream.Write($data, 0,$data.Length)
+$reader = New-Object System.IO.StreamReader($stream)
+$reader.ReadLine()$client.Close()
+Expected Output in Terminal 2: SUCCESS: Transaction query executed smoothly.
+
+Expected Output in Terminal 1 (The Go Window): You will see an immutable log entry print out with a Risk Score: 0 or low value, signed with a post-quantum cryptographic signature.
+
+🟡 Scenario B: Unregistered User (Insider Threat Detect)
+Simulate a completely unknown user attempting to execute commands on the database.
+
+Run this command:
+
+PowerShell
+$client = New-Object System.Net.Sockets.TcpClient("localhost", 8080)
+$stream = $client.GetStream()$data = [System.Text.Encoding]::UTF8.GetBytes("unknown_attacker|192.168.1.25|SELECT * FROM users")
+$stream.Write($data, 0,$data.Length)
+$reader = New-Object System.IO.StreamReader($stream)
+$reader.ReadLine()$client.Close()
+Expected Output in Terminal 2: ACCESS DENIED: Session terminated. Violation: CRITICAL: Unregistered administrative credentials detected
+
+Expected Output in Terminal 1: An immediate alert printout with a Risk Score: 95 along with a cryptographic signature proof.
+
+🔴 Scenario C: Data Exfiltration (SQL Data Monitoring & IP Jump)
+Simulate admin_alex logging in from a completely different network IP address (203.0.113.5) outside the bank's network profile and attempting a bulk dump of the entire financial accounts table.
+
+Run this command:
+
+PowerShell
+$client = New-Object System.Net.Sockets.TcpClient("localhost", 8080)
+$stream = $client.GetStream()$data = [System.Text.Encoding]::UTF8.GetBytes("admin_alex|203.0.113.5|SELECT * FROM core_bank_accounts")
+$stream.Write($data, 0,$data.Length)
+$reader = New-Object System.IO.StreamReader($stream)
+$reader.ReadLine()$client.Close()
+Expected Output in Terminal 2: ACCESS DENIED: Session terminated. Violation: IP network mesh mismatch, Bulk table dump sequence scanned, Targeting high-risk financial registries
+
+Expected Output in Terminal 1: The proxy drops the pipeline instantly, writes a Risk Score: 100 signature record, blocks the account from further sessions, and routes an isolated notice payload to the Streamlit dashboard screen.
